@@ -19,3 +19,11 @@ for x, y in zip(valuesA, valuesB):
     totalDist = totalDist + abs(x - y)
 
 print(totalDist)
+
+countB = { num: valuesB.count(num) for num in set(valuesB)}
+
+similarityScore = 0
+for x in valuesA: 
+    similarityScore = similarityScore + (countB.get(x, 0) * x)
+
+print(similarityScore)
