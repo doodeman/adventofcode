@@ -48,13 +48,31 @@ function isSafe(input) {
     return isSafe; 
 }
 
+function isSafeWithProblemDampening(input) {
+    if (isSafe(input)) {
+        return true; 
+    }
+    for (var i = 0; i < input.length; i++) {
+        var removedOne = input.filter((_, j) => j !== i);
+        if (isSafe(removedOne)) {
+            return true; 
+        }
+    }
+    return false;
+}
+
 async function main() {
     var numbers = await parseNumberFile("input");
     var safeCount = numbers.map(x => {
-        return isSafe(x, false);
+        return isSafe(x);
     }).filter(x => x).length;
     console.log("Safe sequences: " + safeCount);
 
+    var safeWithProblemDampeningCount = numbers.map(x => {
+        return isSafeWithProblemDampening(x);
+    }).filter(x => x).length;
+    
+    console.log("Safe sequences with problem dampening " + safeWithProblemDampeningCount);
 }
 
 main(); 
