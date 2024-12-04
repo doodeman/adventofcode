@@ -16,9 +16,28 @@ func main() {
 	}
 	inputStr := string(content)
 
+	disabled := false
 	sum := 0
 	for i, _ := range inputStr {
 		remain := inputStr[i:]
+
+		if utf8.RuneCountInString(remain) >= 7 {
+			if remain[:7] == "don't()" {
+				disabled = true
+				continue
+			}
+		}
+
+		if utf8.RuneCountInString(remain) >= 4 {
+			if remain[:4] == "do()" {
+				disabled = false
+			}
+		}
+
+		if disabled {
+			continue
+		}
+
 		if utf8.RuneCountInString(remain) < 4 {
 			break
 		}
