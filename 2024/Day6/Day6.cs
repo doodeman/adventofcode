@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace Day6;
 
@@ -10,39 +11,98 @@ public class Day6
     private int[,] Grid { get; set; }
     private int[,] Visited { get; set; }
     private int IterationCount { get; set; }
-    private bool EnableVisualization = true; 
+    private bool EnableVisualization = true;
+    private bool Part1 = false; 
 
 
     public void Solve()
     {
-        var result = ParseGrid(File.ReadAllLines("input"));
-        Grid = result.Grid;
+        var result = ParseGrid(File.ReadAllLines("input_real"));
+        if (Part1)
+        {
+            Grid = result.Grid;
+            RunSimulation(result);
+            Console.WriteLine(CountVisited());
+        }
+        else
+        {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+            int obstacleCount = 0;
+            int runs = 0;
+            List<(int, int)> addedObstacles = new List<(int, int)> ();
+            int totalRuns = result.Grid.GetLength(0) * result.Grid.GetLength(1);
+            Console.WriteLine(totalRuns);
+            for (int y = 0; y < result.Grid.GetLength(0); y++)
+            {
+                for (int x = 0; x < result.Grid.GetLength(1); x++)
+                {
+                    if (result.Grid[y,x] == 0)
+                    {
+                        Grid = (int[,])result.Grid.Clone();
+                        Grid[y, x] = 1;
+                        var infinite = RunSimulation(result); 
+                        if (infinite)
+                        {
+                            addedObstacles.Add((y, x));
+                            obstacleCount++;
+                        }
+                        runs++;
+                        if (runs % 100 == 0)
+                        {
+                            Console.WriteLine(runs);
+                        }
+                    }
+                }
+            }
+            stopwatch.Stop();
+            Console.WriteLine($"Time taken: {stopwatch.ElapsedMilliseconds}ms");
+            Console.WriteLine(obstacleCount);
+            //Visualize(addedObstacles);
+        }
+        Console.ReadLine();
+    }
+
+    private bool RunSimulation(GridParseResult? result)
+    {
         Visited = new int[Grid.GetLength(0), Grid.GetLength(1)];
         GuardX = result.GuardX;
         GuardY = result.GuardY;
         GuardDirection = result.Direction;
+        IterationCount = 0;
 
-        Visited[GuardY, GuardX] = 1; 
+        Visited[GuardY, GuardX] = 1;
+        //Visualize();
         while (true)
         {
-            Visualize();
+            if (IterationCount > 15000)
+            {
+                return true; 
+            }
+            //Visualize();
             var (fX, fY) = GetForwardSquare();
             if (IsOffTheMap(fX, fY))
             {
                 break;
             }
+            int turnAttempts = 0; 
             while (IsObstacle(fX, fY))
             {
                 GuardDirection = Turn();
+                turnAttempts++; 
                 (fX, fY) = GetForwardSquare();
+                if (turnAttempts > 4)
+                {
+                    Visualize();
+                }
+                
             }
             GuardX = fX;
             GuardY = fY;
             Visited[GuardY, GuardX] = 1;
             IterationCount++;
         }
-        Console.WriteLine(CountVisited());
-        Console.ReadLine();
+        return false; 
     }
 
     private bool IsObstacle(int x, int y)
@@ -161,7 +221,7 @@ public class Day6
         return count; 
     }
 
-    private void Visualize()
+    private void Visualize(List<(int, int)> addedObstacles = null)
     {
         if (!EnableVisualization)
             return;
@@ -177,6 +237,10 @@ public class Day6
                 else
                 {
                     var printVal = value == 0 ? '.' : 'O';
+                    if (addedObstacles != null && addedObstacles.Contains((y, x)))
+                    {
+                        printVal = 'X';
+                    }
                     Console.Write(printVal);
                 }
             }
