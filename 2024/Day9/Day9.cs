@@ -65,7 +65,6 @@ public static class Day9
     {
         List<string> alreadyMoved = new List<string>();
        
-        //VisualizeArr(arr);
         int current = maxVal;
         while (true)
         {
@@ -104,7 +103,6 @@ public static class Day9
                 arr[i + freeStart] = arr[fileStart + i];
                 arr[fileStart + i] = swapVal;
             }
-            //VisualizeArr(arr, new List<int> { fileStart });
             current--; 
         }
 
