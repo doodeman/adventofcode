@@ -1,82 +1,59 @@
-﻿namespace Day11;
+﻿using System.Collections.Concurrent;
+
+namespace Day11;
 
 public class TreeCache
 {    
-    private Dictionary<string, Node> nodes = new Dictionary<string, Node>();
-    private bool disable = true; 
+    private ConcurrentDictionary<string, Node> nodes = new ConcurrentDictionary<string, Node>();
+    private bool disable = false;
+    public long cacheHits = 00;
+    public int longestCacheHit = 0; 
 
-
-    public TreeCache()
+    public TreeCache(bool disable)
     {
+        this.disable = disable;
     }
 
     public void Add(List<string> key, List<string[]> values)
     {
-        if (disable)
-        {
-            return; 
-        }
-        var keyStack = new Queue<string>(key);
-        var valueStack = new Queue<string[]>(values);
-        Add(keyStack, valueStack);
-    }
-
-    private List<Node> Add(Queue<string> key, Queue<string[]> value)
-    {
         if (disable || !key.Any())
         {
-            return new List<Node>();
+            return;
         }
-        var currKey = key.Dequeue();
-        var currValue = value.Dequeue();
 
+        var keyQueue = new Queue<string>(key);
+        var valueQueue = new Queue<string[]>(values);
 
-        //See if our key has a node, else, create it
-        if (!nodes.TryGetValue(currKey, out var currNode))
+        var rootKey = keyQueue.Dequeue();
+        var rootValue = valueQueue.Dequeue();
+
+        if (!nodes.TryGetValue(rootKey, out var currentNode))
         {
-            currNode = new Node(currKey, currValue);
-            nodes.Add(currKey, currNode);
-            currNode.Children = Add(key, value, currNode);
-            return new List<Node> { currNode };
+            currentNode = new Node(rootKey, rootValue);
+            nodes.TryAdd(rootKey, currentNode);
         }
-        currNode.Children = Add(key, value, currNode);
-        return new List<Node> { currNode };
-    }
 
-    private List<Node> Add(Queue<string> key, Queue<string[]> value, Node currNode)
-    {
-        if (disable || !key.Any())
+        while (keyQueue.Any())
         {
-            return new List<Node>(); 
-        }
-        var currKey = key.Dequeue();
-        var currValue = value.Dequeue();
+            var nextKey = keyQueue.Dequeue();
+            var nextValue = valueQueue.Dequeue();
 
-        //See if our node has children matching the next key
-        var matchingChild = currNode.Children.FirstOrDefault(exists => exists.Key == currKey);
-        if (matchingChild == null)
-        {
-            //If we don't have a child matching our key, see if there is a node for that key
-            if (nodes.TryGetValue(currKey, out matchingChild))
+            // Look for existing child
+            var matchingChild = currentNode.Children.FirstOrDefault(child => child.Key == nextKey);
+
+            if (matchingChild == null)
             {
-                //link the preexisting node
-                currNode.Children.Add(matchingChild);
+                // Check if node exists in global dictionary
+                if (!nodes.TryGetValue(nextKey, out matchingChild))
+                {
+                    // Create new node if it doesn't exist anywhere
+                    matchingChild = new Node(nextKey, nextValue);
+                    nodes.TryAdd(rootKey, currentNode);
+                }
+                currentNode.Children.Add(matchingChild);
             }
-        }
-        if (matchingChild != null)
-        {
-            matchingChild.Children = Add(key, value, matchingChild);
-            return new List<Node> { matchingChild };
-        }
-        else
-        {
-            var newChild = new Node(currKey, currValue);
-            nodes.Add(currKey, newChild);
-            currNode.Children.Add(newChild);
 
-            var children = Add(key, value, newChild);
-            newChild.Children = children;
-            return currNode.Children;
+            currentNode = matchingChild;
         }
     }
 
@@ -84,18 +61,26 @@ public class TreeCache
      * Gets the value from the cache. 
      * If the value only partially exists, returns the partial value and the depth of the hit.
      */
-    public List<string[]> Get(List<string> key)
+    public (List<string[]> values, int matchedCount) Get(List<string> key)
     {
         var keyQ = new Queue<string>(key);
 
-        var currKey = keyQ.Dequeue(); 
-        Node node;
-        if (disable || !nodes.TryGetValue(currKey, out node))
+        if (disable || !keyQ.Any())
         {
-            return new List<string[]>(); 
+            return (new List<string[]>(), 0);
         }
-        Queue<string[]> ret= new Queue<string[]>();
+
+        var currKey = keyQ.Dequeue(); 
+        if (!nodes.TryGetValue(currKey, out var node))
+        {
+            return (new List<string[]>(), 0);
+        }
+
+        cacheHits++;
+        Queue<string[]> ret = new Queue<string[]>();
         ret.Enqueue(node.Val);
+        int matchCount = 1;
+
         while (keyQ.Any())
         {
             currKey = keyQ.Dequeue();
@@ -103,13 +88,18 @@ public class TreeCache
             if (node != null)
             {
                 ret.Enqueue(node.Val);
+                matchCount++;
             }
             else
             {
-                break; 
+                break;
             }
         }
-        return ret.ToList(); 
+        if (matchCount > longestCacheHit)
+        {
+            longestCacheHit = matchCount;
+        }
+        return (ret.ToList(), matchCount);
     }
 }
 
