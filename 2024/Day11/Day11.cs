@@ -27,17 +27,17 @@ public static class Day11
         Dictionary<string, string[]> cache = new Dictionary<string, string[]>(); 
 
         var sw = new Stopwatch();
+        sw.Start();
         long count = 0;
         for (int i = 0; i < 75; i++)
         {
-            sw.Restart();
 
             (count, var result) = ProcessStones2(stones, cache);
-            stones = result; 
+            stones = result;
 
-            sw.Stop();
-            Console.WriteLine($"Round {i + 1}: Stone count: {count} {sw.ElapsedMilliseconds}ms");
         }
+        sw.Stop();
+        Console.WriteLine($"Stone count: {count} {sw.ElapsedMilliseconds}ms");
         Console.WriteLine(count);
         Console.ReadLine();
     }
@@ -81,36 +81,6 @@ public static class Day11
             }
         }
         
-    }
-
-    public static List<string> ProcessStones(List<string> stones, TreeCache cache)
-    {
-        var current = new List<string[]>(stones.Count);
-        int j = 0;
-        while (j < stones.Count())
-        {
-            var (cacheResult, matchedCount) = cache.Get(stones.Skip(j).ToList());
-
-            if (cacheResult.Count > 0)
-            {
-                current.AddRange(cacheResult);
-                j += matchedCount;
-            }
-            else
-            {
-                current.Add(ProcessStone(stones[j]));
-                j++;
-            }
-        }
-        cache.Add(stones, current);
-        var processedStones = new List<string>(current.Count * 2);
-        foreach (var s in current)
-        {
-            processedStones.AddRange(s);
-        }
-        stones = current.SelectMany(x => x).ToList();
-        (stones, processedStones) = (processedStones, stones);
-        return stones; 
     }
 
     public static string[] ProcessStone(string s)
