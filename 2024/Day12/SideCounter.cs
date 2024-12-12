@@ -6,6 +6,7 @@ public static class SideCounter
 {
     public static int CountSides(List<Coords<char>> coords)
     {
+        //Multiply the size of the array by 2 so that the lil guy has space to move into tight nooks and crannies 
         coords = coords.Select(c =>
         {
             c.X = (c.X+1) * 2;
@@ -13,6 +14,7 @@ public static class SideCounter
             return c;
         }).ToList();
 
+        //We want the lil guy to have space to move around the shapes
         var xMax = coords.Max(c => c.X) + 4;
         var yMax = coords.Max(c => c.Y) + 4;
 
@@ -20,6 +22,7 @@ public static class SideCounter
         foreach (var c in coords)
         {
             matrix[c.Y, c.X] = true;
+            //turns each cell into a 2x2 block 
             List<(int, int)> extra = new List<(int, int)> {
                 (0, 1),
                 (1, 0),
@@ -30,9 +33,10 @@ public static class SideCounter
                 matrix[c.Y+e.Item1,c.X+e.Item2] = true;
             }
         }
+        //Find the number of edges by having the lil guy walk around the edge
         var edgeCount = WalkTheLilGuy(matrix);
 
-        //find holes in the shape and then walk them
+        //Find holes in the shape and then walk them to count internal edges 
         var holes = HoleFinder.FindHoles(coords);
         var internalSides = 0; 
         foreach(var hole in holes)
@@ -45,12 +49,6 @@ public static class SideCounter
             }
             var sides = WalkTheLilGuy(holeMatrix);
             internalSides = internalSides + sides;
-        }
-
-        if (internalSides > 0)
-        {
-            //Visualize(matrix);
-            //Console.WriteLine($"Adding {internalSides} extra internal sides");
         }
         
         return edgeCount + internalSides; 

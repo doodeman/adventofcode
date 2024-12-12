@@ -7,14 +7,7 @@ public static class HoleFinder
     //Finds out if a shape contains holes by "pouring water" (i.e BFS around the edges)
     public static List<List<Coords<bool>>> FindHoles(List<Coords<char>> coords)
     {
-        /*
-        coords = coords.Select(c =>
-        {
-            c.X = (c.X + 1) * 2;
-            c.Y = (c.Y + 1) * 2;
-            return c;
-        }).ToList();
-        */
+        //Do the thing where we blow up an array to 2x size again. Violates DRY but I couldn't possibly care right now. 
         var xMax = coords.Max(c => c.X) + 4;
         var yMax = coords.Max(c => c.Y) + 4;
 
@@ -35,10 +28,12 @@ public static class HoleFinder
         }
         bool[,] visited = new bool[matrix.GetLength(0), matrix.GetLength(1)]; 
 
-        //Surprise, it's BFS again 
+
+        //Surprise, it's BFS again. Do a BFS from the edge to find the outline of the shape itself 
         List<Coords<bool>> toVisit = new List<Coords<bool>> { new Coords<bool>(0, 0, false) };
         visited[0, 0] = true;
 
+        //Again, all this repeated use of BFS could probably be functionized so as to not violated DRY but I don't care right now
         int counter = 0; 
         while (toVisit.Count > 0)
         {
@@ -63,6 +58,7 @@ public static class HoleFinder
             }
         }
 
+        //If the union of the outside BFS and the main matrix contains less cells than the matrix size - We have holes inside the shape 
         int allMinusHoles = 0;
         for (int y = 0; y < visited.GetLength(0); y++)
         {
@@ -77,11 +73,12 @@ public static class HoleFinder
 
         if (allMinusHoles < yMax * xMax)
         {
+            //Find the holes
             (var holeCells, var allHolesMatrix) = FindHolesInShape(matrix, visited);
 
             //We now have what cells are holes - We need to map out which holes are discrete
             List<List<Coords<bool>>> holes = new List<List<Coords<bool>>>();
-            //while some hole cells are not accounted for
+            //Start a BFS at a hole cell; Each BFS reveals a discrete hole. Do this until there are no remaining unmapped holes. 
             GridUtils.FlipBoolMatrix(allHolesMatrix);
             while (holes.SelectMany(x => x).Count() < holeCells)
             {
@@ -101,6 +98,7 @@ public static class HoleFinder
                 }
                 holes.Add(aNewHole);
             }
+            //We now have a discrete collection of holes. 
             return holes;
         }
         return new List<List<Coords<bool>>>(); 
@@ -109,7 +107,7 @@ public static class HoleFinder
     public static (int, bool[,]) FindHolesInShape(bool[,] inMatrix, bool[,] inVisited)
     {
         bool[,] matrix = new bool[inMatrix.GetLength(0), inMatrix.GetLength(1)];
-        //Flip every bit in the matrix
+        //Flip every bit in the matrix to create a negative image
         for (int y = 0; y < inMatrix.GetLength(0); y++)
         {
             for (int x = 0; x < inMatrix.GetLength(1); x++)
@@ -119,10 +117,10 @@ public static class HoleFinder
         }
 
         var holes = new bool[inMatrix.GetLength(0), inMatrix.GetLength(1)];
-        //it's BFS again 
+        //it's BFS again, this time we map the inside of the shape
         var shape = MapShapeBFS(matrix);
         int foundCount = 0; 
-        //We have all the square in the shape - Anything that isn't outside the shape and part of the shape is a hole 
+        //We have all the cells in the shape - Anything that isn't outside the shape and part of the shape is a hole 
         for (int y = 0; y < matrix.GetLength(0); y++)
         {
             for (int x = 0; x < matrix.GetLength(1); x++)
@@ -168,6 +166,7 @@ public static class HoleFinder
         return visited; 
     }
 
+    //used for debugging, currently unreferenced
     public static void VisualizeBFS(bool[,] matrix, bool[,] visited, List<List<Coords<bool>>> holes = null)
     {
         var flatHoles = new List<Coords<bool>>();
@@ -199,28 +198,5 @@ public static class HoleFinder
             Console.WriteLine();
         }
         Console.WriteLine();
-    }
-
-    private static void Visualize(bool[,] matrix, Coords<bool> lilGuy = null)
-    {
-        Console.Clear();
-        for (int y = 0; y < matrix.GetLength(0); y++)
-        {
-            for (int x = 0; x < matrix.GetLength(1); x++)
-            {
-                if (lilGuy != null && x == lilGuy.X && y == lilGuy.Y)
-                {
-                    Console.Write('\u263A');
-                }
-                else
-                {
-                    Console.Write(matrix[y, x] ? "X" : " ");
-                }
-
-            }
-            Console.WriteLine();
-        }
-
-        Thread.Sleep(10);
     }
 }
