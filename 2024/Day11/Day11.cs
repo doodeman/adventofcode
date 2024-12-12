@@ -23,7 +23,6 @@ public static class Day11
             }
         }
 
-        //TreeCache cache = new TreeCache(false); 
         Dictionary<string, string[]> cache = new Dictionary<string, string[]>(); 
 
         var sw = new Stopwatch();

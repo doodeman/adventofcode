@@ -58,7 +58,6 @@ public class Day6
             stopwatch.Stop();
             Console.WriteLine($"Time taken: {stopwatch.ElapsedMilliseconds}ms");
             Console.WriteLine(obstacleCount);
-            //Visualize(addedObstacles);
         }
         Console.ReadLine();
     }
@@ -72,14 +71,12 @@ public class Day6
         IterationCount = 0;
 
         Visited[GuardY, GuardX] = 1;
-        //Visualize();
         while (true)
         {
             if (IterationCount > 15000)
             {
                 return true; 
             }
-            //Visualize();
             var (fX, fY) = GetForwardSquare();
             if (IsOffTheMap(fX, fY))
             {
