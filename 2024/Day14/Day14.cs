@@ -1,7 +1,4 @@
-﻿using Shared;
-using System.Numerics;
-
-namespace Day14;
+﻿namespace Day14;
 
 public static class Day14
 {
@@ -54,28 +51,15 @@ public static class Day14
             Visualize2String(robots, width, height, i);
             strings.Add(" ");
         }
-        //File.WriteAllLines("output", strings.ToArray());
     }
 
     public static void Visualize2String(List<Robot> robots, int width, int height, int inum)
     {
-        /*
-        var xList = robots.Select(x => x.Pos.X).Distinct().ToList();
-        xList.Sort();
-        var maxContX = FindLongestContiguousSequence(xList);
-
-        var yList = robots.Select(y => y.Pos.Y).Distinct().ToList(); 
-        yList.Sort();
-        var maxContY = FindLongestContiguousSequence(yList);
-        */
-
         Dictionary<(int, int), bool> positions = new Dictionary<(int, int), bool>();
         foreach (Robot robot in robots)
         {
             positions[(robot.Pos.Y, robot.Pos.X)] = true;
         }
-
-
 
         if (positions.Values.Count == 500)
         {
@@ -125,42 +109,6 @@ public static class Day14
         }
         return robots; 
     }
-
-    public static int FindLongestContiguousSequence(List<int> sortedList)
-    {
-        if (sortedList == null || sortedList.Count() == 0)
-            return 0;
-
-        int maxLength = 1;
-        int currentLength = 1;
-        int maxStart = 0;
-        int currentStart = 0;
-
-        // Iterate through the array looking for sequences where next number = current + 1
-        for (int i = 1; i < sortedList.Count(); i++)
-        {
-            if (sortedList[i] == sortedList[i - 1] + 1)
-            {
-                currentLength++;
-
-                // Update max if current sequence is longer
-                if (currentLength > maxLength)
-                {
-                    maxLength = currentLength;
-                    maxStart = currentStart;
-                }
-            }
-            else
-            {
-                // Reset sequence tracking when we find a gap
-                currentLength = 1;
-                currentStart = i;
-            }
-        }
-
-        return maxLength; 
-    }
-
 }
 
 
