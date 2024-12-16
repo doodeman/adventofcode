@@ -64,6 +64,17 @@ public static class GridUtils
         };
     }
 
+    public static (int, int) GetCoordsInDirection<T>(Coords<T> pos, Direction dir)
+    {
+        return dir switch
+        {
+            Direction.Up => (pos.Y - 1, pos.X),
+            Direction.Down => (pos.Y + 1, pos.X),
+            Direction.Left => (pos.Y, pos.X - 1),
+            Direction.Right => (pos.Y, pos.X + 1)
+        };
+    }
+
     //Gets right from the perspective of direction
     public static Direction GetRight<T>(Coords<T> pos, Direction dir)
     {
