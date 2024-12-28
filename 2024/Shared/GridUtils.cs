@@ -99,6 +99,30 @@ public static class GridUtils
         };
     }
 
+    public static Direction GetDirection<T, T2>(Coords<T> pos1, Coords<T2> pos2)
+    {
+        var xDiff = pos1.X - pos2.X;
+        var yDiff = pos1.Y - pos2.Y;
+
+        if (xDiff > 0 && yDiff == 0)
+        {
+            return Direction.Right; 
+        } 
+        if (xDiff < 0 && yDiff == 0)
+        {
+            return Direction.Left;
+        }
+        if (yDiff < 0 && xDiff == 0)
+        {
+            return Direction.Up;
+        }
+        if (yDiff > 0 && xDiff == 0)
+        {
+            return Direction.Down; 
+        }
+        throw new Exception("oh no");
+    }
+
     public static void Move<T>(Coords<T> pos, Direction dir)
     {
         var newCoords = dir switch
