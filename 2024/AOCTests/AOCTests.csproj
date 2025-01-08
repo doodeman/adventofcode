@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 
@@ -20,6 +20,7 @@
     <ProjectReference Include="..\Day11\Day11.csproj" />
     <ProjectReference Include="..\Day12\Day12.csproj" />
     <ProjectReference Include="..\Day14\Day14.csproj" />
+    <ProjectReference Include="..\Day23\Day23.csproj" />
     <ProjectReference Include="..\Shared\Shared.csproj" />
   </ItemGroup>
 
